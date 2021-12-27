@@ -3,7 +3,7 @@ import json
 from configparser import ConfigParser
 import datetime
 from swap.swap import *
-from ftm_addresses import token_address_dict, token_abi, hector_abi
+from ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
 from web3.gas_strategies.time_based import medium_gas_price_strategy
 
 def get_config():
@@ -11,29 +11,18 @@ def get_config():
     config_object.read("config.ini")
     return config_object
 
-def string_to_bytes32(data):
-    if len(data) > 32:
-        myBytes32 = data[:32]
-    else:
-        myBytes32 = data.ljust(32, '0')
-    return bytes(myBytes32, 'utf-8')
-
-
 class Hector:
     def __init__(self, 
                         key,
-                        contract_address, 
                         wallet_address, 
                         swap,
                         ):
-        provider = "https://rpc.ftm.tools/"
-        web3 = Web3(Web3.HTTPProvider(provider))
+        web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.web3 = web3
         self.wallet_address = wallet_address
-        self.contract_address = contract_address
         self.gas = 500080
         self.key = key
-        self.contract = web3.eth.contract(address=Web3.toChecksumAddress(contract_address), abi=hector_abi)
+        self.contract = web3.eth.contract(address=Web3.toChecksumAddress(hector_contract_address), abi=hector_abi)
         self.hector_config_path = "hector.ini"
         
         self.section_title = "hector"
@@ -77,11 +66,14 @@ class Hector:
 
         nonce = self.web3.eth.getTransactionCount(self.wallet_address)
         web3 = self.web3
-        token_tx = self.contract.functions.unstake(12345, True).buildTransaction(
+        token_tx = self.contract.functions.unstake(amount, True).buildTransaction(
                 {
+                    #"from": Web3.toChecksumAddress(self.wallet_address),
+                    #"to": Web3.toChecksumAddress(hector_contract_address),
                     'chainId':250, 
                     'gas':2000000,
-                    'nonce':nonce
+                    'nonce':nonce,
+                    "gasPrice": web3.eth.gas_price
                 }
             )
 
@@ -102,7 +94,6 @@ def get_hector():
     config_object = get_config()
     address = config_object["address"]
     return Hector(
-        contract_address=address["contract_address"],
         wallet_address=address["wallet_address"],
         key = config_object["keys"]["hector"],
         swap=Swap(),
@@ -113,7 +104,9 @@ if __name__ == "__main__":
 
     hector:Hector = get_hector()
     
-    #print(hector.unstake(154569))
+    #print(hector_contract_address)
+
+    print(hector.unstake(15456900))
     print(hector.amountSHec())
     print(hector.amountHec())
     #hector.check_stack_status()
