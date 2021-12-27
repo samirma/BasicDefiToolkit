@@ -10,6 +10,7 @@ token_abi = load_abi("token.abi")
 pairs_abi = load_abi("pairs.abi")
 router_abi = load_abi("router.abi")
 factory_abi = load_abi("factory.abi")
+hector_abi = load_abi("hector.abi")
 
 ftm_provider = "https://rpc.ftm.tools/"
 

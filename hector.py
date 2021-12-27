@@ -3,17 +3,25 @@ import json
 from configparser import ConfigParser
 import datetime
 from swap.swap import *
-from ftm_addresses import token_address_dict, token_abi
+from ftm_addresses import token_address_dict, token_abi, hector_abi
+from web3.gas_strategies.time_based import medium_gas_price_strategy
 
 def get_config():
     config_object = ConfigParser()
     config_object.read("config.ini")
     return config_object
 
+def string_to_bytes32(data):
+    if len(data) > 32:
+        myBytes32 = data[:32]
+    else:
+        myBytes32 = data.ljust(32, '0')
+    return bytes(myBytes32, 'utf-8')
+
+
 class Hector:
     def __init__(self, 
                         key,
-                        hector_staking_abi,
                         contract_address, 
                         wallet_address, 
                         swap,
@@ -25,9 +33,7 @@ class Hector:
         self.contract_address = contract_address
         self.gas = 500080
         self.key = key
-        abi_raw = hector_staking_abi
-        abi = json.loads(abi_raw)
-        self.contract = web3.eth.contract(address=Web3.toChecksumAddress(contract_address), abi=abi)
+        self.contract = web3.eth.contract(address=Web3.toChecksumAddress(contract_address), abi=hector_abi)
         self.hector_config_path = "hector.ini"
         
         self.section_title = "hector"
@@ -66,30 +72,30 @@ class Hector:
             profit = config_object[self.profit_title]
             self.haverst_profit(last_check, last_amount, profit)
 
+    def unstake(self, amount):
+        self.web3.eth.setGasPriceStrategy(medium_gas_price_strategy)
+
+        nonce = self.web3.eth.getTransactionCount(self.wallet_address)
+        web3 = self.web3
+        token_tx = self.contract.functions.unstake(12345, True).buildTransaction(
+                {
+                #    'chainId':250, 
+                    'gas':2000000,
+                    'nonce':nonce
+                }
+            )
+
+        sign_txn = web3.eth.account.signTransaction(token_tx, self.key)
+        tx_hash = web3.eth.sendRawTransaction(sign_txn.rawTransaction)
+        return tx_hash
+
 
     def haverst_profit(self, last_check, last_amount, profit):
         current_amount = self.amount()
         if (last_amount < current_amount):
-            #self.unstake( (current_amount - last_amount) * profit )
+            self.unstake( (current_amount - last_amount) * profit )
             self.swap.swap()
 
-    def withdraw(self):
-
-        nonce = self.web3.eth.getTransactionCount(self.wallet_address)
-
-        web3 = self.web3
-
-        token_tx = self.contract.functions.withdraw().buildTransaction({
-                    'chainId':250, 
-                    'gas': self.gas,
-                    'gasPrice': web3.toWei('5','gwei'), 
-                    'nonce':nonce
-                })
-
-        sign_txn = web3.eth.account.signTransaction(token_tx, private_key=self.key)
-        web3.eth.sendRawTransaction(sign_txn.rawTransaction)
-        print(f"Transaction has been sent to {self.main_address}")
-                
 
 
 def get_hector():
@@ -99,14 +105,14 @@ def get_hector():
         contract_address=address["contract_address"],
         wallet_address=address["wallet_address"],
         key = config_object["keys"]["hector"],
-        hector_staking_abi = config_object["abis"]["hector_staking"],
         swap=Swap(),
     )
 
 
 if __name__ == "__main__":
 
-    hector = get_hector()
+    hector:Hector = get_hector()
+    print(hector.unstake(154569))
     print(hector.amountSHec())
-    print(hector.amountHec())
+    #print(hector.amountHec())
     #hector.check_stack_status()

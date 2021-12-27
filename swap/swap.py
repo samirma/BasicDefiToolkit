@@ -13,31 +13,24 @@ import time
 
 class Swap:
 
-    def swap(self, wallet_address):
+    def swap(self, wallet_address,amount, input, output):
         web3 = Web3(Web3.HTTPProvider(ftm_provider))
-        token_symbol = 'CRV'
-        token_symbol = 'WBTC'
-        #token_symbol = 'BOO'
         wallet_address = web3.toChecksumAddress(wallet_address)
-        weth_address = web3.toChecksumAddress(token_address_dict["WFTM"])
-        dex = 'sushi'
-        #dex = 'spooky'
-        spend_amount = 0.1
-        slippage = 0.05
-        total_max_spend = spend_amount * 5
-        token_address = web3.toChecksumAddress(token_address_dict[token_symbol])
-        token_contract = web3.eth.contract(address=token_address, abi=token_abi)
-        decimal = token_contract.functions.decimals().call()
-        #amount_approved, tx = approve_spend(web3, weth_address, dex, wallet_address, total_max_spend=total_max_spend)
-        #print(tx)
-        #time.sleep(2)
-        token_balance_start = token_contract.functions.balanceOf(wallet_address).call()
-        tokens_bought, tx = self.buy(web3, weth_address, token_address, dex, wallet_address, spend_amount=spend_amount)
-        # Can we get amount received in the transaction?
+        token_address_in = web3.toChecksumAddress(token_address_dict[input])
+        #dex = 'sushi'
+        dex = 'spooky'
+        token_address_out = web3.toChecksumAddress(token_address_dict[output])
+        tokens_bought, tx = self.buy(web3, 
+                            token_address_in = token_address_in, 
+                            token_address_out = token_address_out, 
+                            thisdex = dex, 
+                            wallet_address = wallet_address, 
+                            spend_amount=amount
+                            )
 
 
     def buy(self, web3, token_address_in, token_address_out, thisdex, wallet_address, holy_key,
-            spend_amount=0.1, slippage=0.05, dt=20, max_gas = 323186, gas_price = 120):
+            spend_amount, slippage=0.05, dt=20, max_gas = 323186, gas_price = 120):
         d = datetime.utcnow()
         unixtime = calendar.timegm(d.utctimetuple())
         deadline = unixtime + dt * 1000
