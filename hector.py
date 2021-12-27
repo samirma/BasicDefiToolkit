@@ -79,7 +79,7 @@ class Hector:
         web3 = self.web3
         token_tx = self.contract.functions.unstake(12345, True).buildTransaction(
                 {
-                #    'chainId':250, 
+                    'chainId':250, 
                     'gas':2000000,
                     'nonce':nonce
                 }
@@ -112,7 +112,8 @@ def get_hector():
 if __name__ == "__main__":
 
     hector:Hector = get_hector()
-    print(hector.unstake(154569))
+    
+    #print(hector.unstake(154569))
     print(hector.amountSHec())
-    #print(hector.amountHec())
+    print(hector.amountHec())
     #hector.check_stack_status()
