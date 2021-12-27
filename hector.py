@@ -44,22 +44,39 @@ class Hector:
         return contract.functions.balanceOf(self.wallet_address).call()
 
     def check_stack_status(self):
-        ct = datetime.datetime.now()
-        ts = ct.timestamp()
+        #ct = datetime.datetime.now()
+        #ts = ct.timestamp()
         config_object = ConfigParser()
         read_result = config_object.read(self.hector_config_path)
+        
+        amount = self.amountSHec()
+        
         if (len(read_result) == 0):
-            amount = self.amount()
-            config_object[self.section_title] = {self.last_check_module_title: ts,
-                                self.amount_title: amount,
-                                self.profit_title: 0.3}
-            with open(self.hector_config_path , 'w') as configfile:
-                config_object.write(configfile)
+            self.persist_update(config_object = config_object, amount = amount, profit = 0.3)
         else:
-            last_check = config_object[self.last_check_module_title]
-            last_amount = config_object[self.amount_title]
-            profit = config_object[self.profit_title]
-            self.haverst_profit(last_check, last_amount, profit)
+            hec_config = config_object[self.section_title]
+            last_amount = hec_config[self.amount_title]
+            profit = hec_config[self.profit_title]
+            if (float(last_amount) < amount):
+                #self.haverst_profit(last_check, last_amount, profit)
+                self.persist_update(config_object = config_object, amount = amount, profit = 0.3)
+
+
+    def persist_update(self, config_object, amount, profit):
+        print(f"new amount: {amount} profit {profit}")
+        config_object[self.section_title] = {
+                            self.amount_title: amount,
+                            self.profit_title: profit
+                        }
+        with open(self.hector_config_path , 'w') as configfile:
+            config_object.write(configfile)
+
+
+    def haverst_profit(self, last_amount, profit):
+        current_amount = self.amount()
+        if (last_amount < current_amount):
+            self.unstake( (current_amount - last_amount) * profit )
+            self.swap.swap()
 
     def unstake(self, amount):
         self.web3.eth.setGasPriceStrategy(medium_gas_price_strategy)
@@ -82,14 +99,6 @@ class Hector:
         return tx_hash
 
 
-    def haverst_profit(self, last_check, last_amount, profit):
-        current_amount = self.amount()
-        if (last_amount < current_amount):
-            self.unstake( (current_amount - last_amount) * profit )
-            self.swap.swap()
-
-
-
 def get_hector():
     config_object = get_config()
     address = config_object["address"]
@@ -104,9 +113,9 @@ if __name__ == "__main__":
 
     hector:Hector = get_hector()
     
-    #print(hector_contract_address)
+    print(hector.check_stack_status())
 
-    print(hector.unstake(15456900))
+    #print(hector.unstake(15456900))
     print(hector.amountSHec())
     print(hector.amountHec())
     #hector.check_stack_status()
