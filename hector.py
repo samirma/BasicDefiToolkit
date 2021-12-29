@@ -55,10 +55,10 @@ class Hector:
             self.persist_update(config_object = config_object, amount = amount, profit = 0.3)
         else:
             hec_config = config_object[self.section_title]
-            last_amount = hec_config[self.amount_title]
-            profit = hec_config[self.profit_title]
-            if (float(last_amount) < amount):
-                #self.haverst_profit(last_check, last_amount, profit)
+            last_amount = float(hec_config[self.amount_title])
+            profit = float(hec_config[self.profit_title])
+            if (last_amount < amount):
+                self.haverst_profit(last_amount, profit, amount)
                 self.persist_update(config_object = config_object, amount = amount, profit = 0.3)
 
 
@@ -72,11 +72,12 @@ class Hector:
             config_object.write(configfile)
 
 
-    def haverst_profit(self, last_amount, profit):
-        current_amount = self.amount()
+    def haverst_profit(self, last_amount, profit, current_amount):
         if (last_amount < current_amount):
-            self.unstake( (current_amount - last_amount) * profit )
-            self.swap.swap()
+            haverst_amount = (current_amount - last_amount) * profit 
+            print(f"To be havested {haverst_amount}")
+            #self.unstake( haverst_amount )
+            #self.swap.swap()
 
     def unstake(self, amount):
         self.web3.eth.setGasPriceStrategy(medium_gas_price_strategy)
