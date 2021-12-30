@@ -1,6 +1,5 @@
 from web3 import Web3
-
-
+from web3.contract import ContractFunction
 class style():
     BLACK = '\033[30m'
     RED = '\033[31m'
@@ -15,11 +14,13 @@ class style():
 
 class TransactionManager:
     
-    def execute_transation(self, funTx, web3: Web3, wallet_address, key):
+    def execute_transation(self, funTx: ContractFunction, web3: Web3, wallet_address, key):
         nonce = web3.eth.getTransactionCount(wallet_address)
         tx = funTx.buildTransaction({
             'from': wallet_address,
-            'gas': funTx.estimateGas(),
+            #'gas': web3.eth.estimateGas({"from": wallet_address}),
+            'gas': funTx.estimateGas({"from": wallet_address, "gasPrice": web3.eth.gas_price}),
+            #'gas':2000000,
             'nonce': nonce,
             "gasPrice": web3.eth.gas_price
         })

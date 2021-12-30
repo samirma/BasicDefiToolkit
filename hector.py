@@ -16,6 +16,7 @@ class Hector:
                         key,
                         wallet_address, 
                         swap,
+                        txManager
                         ):
         web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.web3 = web3
@@ -29,8 +30,8 @@ class Hector:
         self.last_check_module_title = "last_check"
         self.amount_title = "amount"
         self.profit_title = "profit"
-
-        self.swap :Swap = swap
+        self.swap:Swap = swap
+        self.txManager:TransactionManager = txManager
 
 
     def amountHec(self):
@@ -80,33 +81,23 @@ class Hector:
             #self.swap.swap()
 
     def unstake(self, amount):
-        self.web3.eth.setGasPriceStrategy(medium_gas_price_strategy)
-
-        nonce = self.web3.eth.getTransactionCount(self.wallet_address)
-        web3 = self.web3
-        token_tx = self.contract.functions.unstake(amount, True).buildTransaction(
-                {
-                    #"from": Web3.toChecksumAddress(self.wallet_address),
-                    #"to": Web3.toChecksumAddress(hector_contract_address),
-                    'chainId':250, 
-                    'gas':2000000,
-                    'nonce':nonce,
-                    "gasPrice": web3.eth.gas_price
-                }
-            )
-
-        sign_txn = web3.eth.account.signTransaction(token_tx, self.key)
-        tx_hash = web3.eth.sendRawTransaction(sign_txn.rawTransaction)
-        return tx_hash
-
+        fnUnstake = self.contract.functions.unstake(amount, True)
+        self.txManager.execute_transation(
+            funTx=fnUnstake,
+            web3=self.web3,
+            wallet_address=self.wallet_address,
+            key=self.key
+        )
 
 def get_hector():
     config_object = get_config()
     address = config_object["address"]
+    txManager=TransactionManager()
     return Hector(
         wallet_address=address["wallet_address"],
         key = config_object["keys"]["hector"],
-        swap=Swap(),
+        swap=Swap(txManager),
+        txManager=txManager
     )
 
 
@@ -116,6 +107,7 @@ if __name__ == "__main__":
     
     print(hector.check_stack_status())
 
+    #print(hector.unstake(156))
     #print(hector.unstake(15456900))
     print(hector.amountSHec())
     print(hector.amountHec())

@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     token_address_checked = token_address_dict[SYMBOL]
     wallet_address_checked = web3.toChecksumAddress(wallet_address)
-    approve_spend(web3, token_address_checked, router_addresses['spirit'],  wallet_address_checked, key, total_max_spend=3*2)
+    #approve_spend(web3, token_address_checked, router_addresses['spirit'],  wallet_address_checked, key, total_max_spend=3*2)
     
     exit(0)
     swap.swap(

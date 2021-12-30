@@ -112,17 +112,7 @@ class Swap:
         print("Approved up to {}".format(allowed))
         max_amount = int(web3.toWei(total_max_spend, 'ether'))
         if allowed < max_amount:
-            nonce = web3.eth.getTransactionCount(wallet_address)
-            funTx = token_contract_in.functions.approve(cs_router_address, max_amount)
-            tx = funTx.buildTransaction({
-                'from': wallet_address,
-                'gas': funTx.estimateGas(),
-                'nonce': nonce,
-                "gasPrice": web3.eth.gas_price
-            })
-            signed_tx = web3.eth.account.signTransaction(tx, key)
-            tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-            tx = web3.toHex(tx_hash)
+            self.txManager.execute_transation
         else:
             tx = 'approval exists'
         allowed = token_contract_in.functions.allowance(cs_wallet_address, cs_router_address).call()
