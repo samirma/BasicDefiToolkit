@@ -2,7 +2,7 @@ from web3 import Web3
 import json
 from configparser import ConfigParser
 import datetime
-import sys
+from transaction_manager import * 
 from ftm_addresses import token_abi, pairs_abi, router_abi, factory_abi, ftm_provider
 from ftm_addresses import factory_addresses, router_addresses
 from ftm_addresses import token_address_dict, pair_address_dict
@@ -11,40 +11,28 @@ from datetime import datetime
 import calendar
 import time
 
-class style():
-    BLACK = '\033[30m'
-    RED = '\033[31m'
-    GREEN = '\033[32m'
-    YELLOW = '\033[33m'
-    BLUE = '\033[34m'
-    MAGENTA = '\033[35m'
-    CYAN = '\033[36m'
-    WHITE = '\033[37m'
-    UNDERLINE = '\033[4m'
-    RESET = '\033[0m'
-
 
 class Swap:
 
-    def __init__(self):
+    def __init__(self, txManager):
         web3 = Web3(Web3.HTTPProvider(ftm_provider))
-        self.web3 = web3
+        self.web3 = web3,
+        self.txManager:TransactionManager = txManager
 
     def swap(self, wallet_address, amount, input, output, key):
         web3 = self.web3
-        wallet_address = web3.toChecksumAddress(wallet_address)
         token_address_in = token_address_dict[input]
         #dex = 'sushi'
         dex = 'spooky'
         token_address_out = token_address_dict[output]
-        tokens_bought, tx = self.buy(web3, 
-                            token_address_in = token_address_in, 
-                            token_address_out = token_address_out, 
-                            thisdex = dex, 
-                            wallet_address = wallet_address, 
-                            spend_amount=amount,
-                            holy_key=key
-                            )
+        self.buy(web3, 
+                token_address_in = token_address_in, 
+                token_address_out = token_address_out, 
+                thisdex = dex, 
+                wallet_address = wallet_address, 
+                spend_amount=amount,
+                holy_key=key
+                )
 
     def buy(self, web3, token_address_in, token_address_out, thisdex, wallet_address, holy_key,
             spend_amount, slippage=0.05, dt=20):
@@ -58,42 +46,31 @@ class Swap:
 
         token_contract_in = web3.eth.contract(address=token_contract_checked, abi=token_abi)
         token_balance_in = token_contract_in.functions.balanceOf(wallet_address).call()
-        if token_balance_in < amount_in:
-            print(f"Insufficient balance, transaction will fail token_balance: {token_balance_in} amount_in: {amount_in}")
+        #if token_balance_in < amount_in:
+        #    print(f"Insufficient balance, transaction will fail token_balance: {token_balance_in} amount_in: {amount_in}")
             #exit(0)
+        
         router_address = router_addresses[thisdex]
         router_contract = web3.eth.contract(address=web3.toChecksumAddress(router_address), abi=router_abi)
         token_amount_out = router_contract.functions.getAmountsOut(amount_in, [token_address_in, token_address_out]).call()
-        decimal = token_contract_in.functions.decimals().call()
-        print("Expected out: {}".format(token_amount_out[1] / 10**decimal))
+
         min_amount_out = int(token_amount_out[1] * (1.0 - slippage))
-        time.sleep(1)
-
-        trans = {
-            'gas': web3.eth.getBlock("latest").gasLimit,
-            'gasPrice': 211348,#web3.eth.gasPrice,
-            'nonce': web3.eth.get_transaction_count(wallet_address),
-        }
-
-        print(f"Trnsaction: {trans}")
-
-        buy_tx = router_contract.functions.swapExactTokensForTokens(
+        
+        funSwap = router_contract.functions.swapExactTokensForTokens(
             amount_in,
             min_amount_out,
             [web3.toChecksumAddress(token_address_in),
             web3.toChecksumAddress(token_address_out)],
             wallet_address,
-            deadline).buildTransaction(trans)
-        signed_tx = web3.eth.account.sign_transaction(buy_tx, holy_key)
-        tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-        hashes = Web3.toHex(tx_hash)
-        time.sleep(8)
-        status = web3.eth.get_transaction_receipt(hashes)
-        txStatus = status.status
-        if int(txStatus) == 1:
-            print(style.YELLOW+"SuccessFully Bought $symbol at transactionHash {}".format(hashes)+style.RESET)
-        else:
-            print(style.MAGENTA+"TRANSACTION FAILED !!"+style.RESET)
+            deadline
+        )
+
+        self.txManager.execute_transation(
+            funTx=funSwap,
+            web3 = web3,
+            wallet_address = wallet_address,
+            key = holy_key
+        )
 
     def get_balance(self, coin_name, wallet_address):
         web3 = self.web3
@@ -125,4 +102,29 @@ class Swap:
     def convert_amount_to_human(self, amount, token_address):
         symbolDecimals = self.decimal_value(token_address)
         return amount / 10 ** symbolDecimals
+
+    def approve_spend(self, token_address_in, router_address, wallet_address, key, total_max_spend=1.0):
+        web3 = self.web3
+        cs_router_address = web3.toChecksumAddress(router_address)
+        cs_wallet_address = web3.toChecksumAddress(wallet_address)
+        token_contract_in = web3.eth.contract(address=web3.toChecksumAddress(token_address_in), abi=token_abi)
+        allowed = int(token_contract_in.functions.allowance(cs_wallet_address, cs_router_address).call())
+        print("Approved up to {}".format(allowed))
+        max_amount = int(web3.toWei(total_max_spend, 'ether'))
+        if allowed < max_amount:
+            nonce = web3.eth.getTransactionCount(wallet_address)
+            funTx = token_contract_in.functions.approve(cs_router_address, max_amount)
+            tx = funTx.buildTransaction({
+                'from': wallet_address,
+                'gas': funTx.estimateGas(),
+                'nonce': nonce,
+                "gasPrice": web3.eth.gas_price
+            })
+            signed_tx = web3.eth.account.signTransaction(tx, key)
+            tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
+            tx = web3.toHex(tx_hash)
+        else:
+            tx = 'approval exists'
+        allowed = token_contract_in.functions.allowance(cs_wallet_address, cs_router_address).call()
+        return(allowed, tx)
 
