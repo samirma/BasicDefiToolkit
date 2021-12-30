@@ -6,20 +6,24 @@ from transaction_manager import *
 from ftm_addresses import token_abi, pairs_abi, router_abi, factory_abi, ftm_provider
 from ftm_addresses import factory_addresses, router_addresses
 from ftm_addresses import token_address_dict, pair_address_dict
-import math
-from datetime import datetime
-import calendar
-import time
+from time import sleep, time
+from decimal import Decimal
 
 
 class Swap:
 
     def __init__(self, txManager):
-        web3 = Web3(Web3.HTTPProvider(ftm_provider))
-        self.web3 = web3,
+        self.web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.txManager:TransactionManager = txManager
 
-    def swap(self, wallet_address, amount, input, output, key):
+    def swap(self, 
+            wallet_address, 
+            amount, 
+            input, 
+            output, 
+            key
+        ):
+
         web3 = self.web3
         token_address_in = token_address_dict[input]
         #dex = 'sushi'
@@ -30,39 +34,38 @@ class Swap:
                 token_address_out = token_address_out, 
                 thisdex = dex, 
                 wallet_address = wallet_address, 
-                spend_amount=amount,
+                amount=amount,
                 holy_key=key
                 )
 
-    def buy(self, web3, token_address_in, token_address_out, thisdex, wallet_address, holy_key,
-            spend_amount, slippage=0.05, dt=20):
-        d = datetime.utcnow()
-        unixtime = calendar.timegm(d.utctimetuple())
-        deadline = unixtime + dt * 1000
-        #amount_in = self.convertToSwap(spend_amount)
-        amount_in = spend_amount
+    def buy(self, 
+                web3, 
+                token_address_in, 
+                token_address_out, 
+                thisdex, 
+                wallet_address, 
+                holy_key,
+                amount, 
+                slippage=0.05, 
+                dt=20
+                ):
+                
+        base = Web3.toChecksumAddress(token_address_in)
+        DECIMALS = self.decimals(token_address_in)
+        amount = int(amount * DECIMALS)
 
-        token_contract_checked = web3.toChecksumAddress(token_address_in)
-
-        token_contract_in = web3.eth.contract(address=token_contract_checked, abi=token_abi)
-        token_balance_in = token_contract_in.functions.balanceOf(wallet_address).call()
-        #if token_balance_in < amount_in:
-        #    print(f"Insufficient balance, transaction will fail token_balance: {token_balance_in} amount_in: {amount_in}")
-            #exit(0)
-        
         router_address = router_addresses[thisdex]
-        router_contract = web3.eth.contract(address=web3.toChecksumAddress(router_address), abi=router_abi)
-        token_amount_out = router_contract.functions.getAmountsOut(amount_in, [token_address_in, token_address_out]).call()
+        routerContract = web3.eth.contract(address=web3.toChecksumAddress(router_address), abi=router_abi)
 
-        min_amount_out = int(token_amount_out[1] * (1.0 - slippage))
-        
-        funSwap = router_contract.functions.swapExactTokensForTokens(
-            amount_in,
-            min_amount_out,
-            [web3.toChecksumAddress(token_address_in),
-            web3.toChecksumAddress(token_address_out)],
-            wallet_address,
-            deadline
+        amount_out = routerContract.functions.getAmountsOut(amount, [base, Web3.toChecksumAddress(token_address_out)]).call()[-1]
+        min_tokens = int(amount_out * (1 - (50 / 100)))
+
+        funSwap = routerContract.functions.swapExactTokensForTokens(
+            amount,
+            min_tokens,
+            [base, Web3.toChecksumAddress(token_address_out)],
+            Web3.toChecksumAddress(wallet_address),
+            deadline = int(time() + + 240)
         )
 
         self.txManager.execute_transation(
@@ -95,9 +98,9 @@ class Swap:
         return token_contract.functions.decimals().call()
 
     def convert_amount_to_swap(self, amount, token_address):
-        symbolDecimals = self.decimal_value(token_address)
-        return amount * 10 ** symbolDecimals
-
+        DECIMALS = self.decimals(token_address)
+        amount = amount * DECIMALS
+        return amount
 
     def convert_amount_to_human(self, amount, token_address):
         symbolDecimals = self.decimal_value(token_address)
@@ -118,3 +121,9 @@ class Swap:
         allowed = token_contract_in.functions.allowance(cs_wallet_address, cs_router_address).call()
         return(allowed, tx)
 
+    def decimals(self, address):
+        decimals = self.decimal_value(address)
+        DECIMALS = 10 ** decimals
+        return DECIMALS
+
+        

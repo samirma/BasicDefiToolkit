@@ -18,9 +18,7 @@ class TransactionManager:
         nonce = web3.eth.getTransactionCount(wallet_address)
         tx = funTx.buildTransaction({
             'from': wallet_address,
-            #'gas': web3.eth.estimateGas({"from": wallet_address}),
             'gas': funTx.estimateGas({"from": wallet_address, "gasPrice": web3.eth.gas_price}),
-            #'gas':2000000,
             'nonce': nonce,
             "gasPrice": web3.eth.gas_price
         })
