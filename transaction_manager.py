@@ -15,18 +15,23 @@ class style():
 
 class TransactionManager:
 
-    def __init__(self):
+    def __init__(self, wallet_address, key):
         self.transactions = []
+        self.wallet_address = wallet_address
+        self.key = key
     
-    def execute_transation(self, funTx: ContractFunction, web3: Web3, wallet_address, key):
-        nonce = web3.eth.getTransactionCount(wallet_address)
+    def execute_transation(self, funTx: ContractFunction, web3: Web3):
+
+        print(f"Key {self.key} Wallet {self.wallet_address}")
+
+        nonce = web3.eth.getTransactionCount(self.wallet_address)
         tx = funTx.buildTransaction({
-            'from': wallet_address,
-            'gas': funTx.estimateGas({"from": wallet_address, "gasPrice": web3.eth.gas_price}),
+            'from': self.wallet_address,
+            'gas': funTx.estimateGas({"from": self.wallet_address, "gasPrice": web3.eth.gas_price}),
             'nonce': nonce,
             "gasPrice": web3.eth.gas_price
         })
-        signed_tx = web3.eth.account.signTransaction(tx, key)
+        signed_tx = web3.eth.account.signTransaction(tx, self.key)
         tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
         hashes = Web3.toHex(tx_hash)
         web3.eth.waitForTransactionReceipt(tx_hash)

@@ -1,6 +1,5 @@
 from web3 import Web3
-import json
-import datetime
+import time
 from swap.swap import *
 from ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
 from profile_executor import *
@@ -28,47 +27,49 @@ class Hector:
         return self.swap.get_balance_by_address(token_address_dict['SHEC'], wallet_address=self.swap.wallet_address)
 
     def check_stack_status(self):
-        #ct = datetime.datetime.now()
-        #ts = ct.timestamp()
         self.defiStatus.load()
         
         amount = self.amountSHec()
         
         if (self.defiStatus.is_first()):
+            print("First read")
             self.defiStatus.save(amount = amount, profit = 0.3)
         else:
-            last_amount = self.defiStatus.last_amount
+            last_amount = self.defiStatus.amount
             profit = self.defiStatus.profit
+            print(f"{last_amount} < {amount}")
             if (last_amount < amount):
                 self.haverst_profit(last_amount, profit, amount)
                 self.defiStatus.save(amount = amount, profit = 0.3)
 
     def haverst_profit(self, last_amount, profit, current_amount):
-        haverst_amount = (current_amount - last_amount) * profit 
+        haverst_amount = int((current_amount - last_amount) * profit)
         print(f"To be havested {haverst_amount}")
-        if (last_amount < current_amount and False):
+        if (last_amount < current_amount):
             self.unstake( haverst_amount )
+            time.sleep(30)
             self.profileExecutor.execute_profit(self.web3)
 
     def unstake(self, amount):
         fnUnstake = self.contract.functions.unstake(amount, True)
         self.txManager.execute_transation(
             funTx=fnUnstake,
-            web3=self.web3,
-            wallet_address=self.wallet_address,
-            key=self.key
+            web3=self.web3
         )
 
 def get_hector():
-    config_object:Config = get_config()
-    txManager = TransactionManager()
 
-    swap: Swap = Swap(
-        txManager=txManager,
+    config_object:Config = get_config()
+
+    txManager = TransactionManager(
         key = config_object.fantom_key,
         wallet_address = config_object.wallet
     )
 
+    swap: Swap = Swap(
+        txManager=txManager,
+        wallet_address = config_object.wallet
+    )
     
     profileExecutor = ProfileExecutor(
         txManager = txManager,

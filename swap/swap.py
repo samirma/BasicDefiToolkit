@@ -13,12 +13,10 @@ class Swap:
 
     def __init__(self,
                 txManager,
-                key,
                 wallet_address
             ):
         self.web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.txManager:TransactionManager = txManager
-        self.key = key
         self.wallet_address = wallet_address
 
     def swap(self,
@@ -27,13 +25,11 @@ class Swap:
             output 
         ):
         web3 = self.web3
-        token_address_in = token_address_dict[input]
         #dex = 'sushi'
         dex = 'spooky'
-        token_address_out = token_address_dict[output]
         self.buy(web3, 
-                token_address_in = token_address_in, 
-                token_address_out = token_address_out, 
+                token_address_in = input, 
+                token_address_out = output, 
                 thisdex = dex, 
                 amount=amount
                 )
@@ -66,9 +62,7 @@ class Swap:
 
         self.txManager.execute_transation(
             funTx=funSwap,
-            web3 = web3,
-            wallet_address = self.wallet_address,
-            key = self.key
+            web3 = web3
         )
 
     def get_balance(self, coin_name, wallet_address):

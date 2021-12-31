@@ -19,11 +19,11 @@ class DefiStatus:
 
 
     def is_first(self):
-        return self.amount == -1
+        return self.amount == AMOUNT
 
     def load(self):
         self.config_object.read(self.file_path)
-        self.last_amount = self.config_object.getfloat(self.section_title, self.amount_title, fallback=AMOUNT)
+        self.amount = self.config_object.getfloat(self.section_title, self.amount_title, fallback=AMOUNT)
         self.profit = self.config_object.getfloat(self.section_title, self.profit_title, fallback=PROFIT)
 
     def save(self, profit, amount):
@@ -57,6 +57,10 @@ def get_config():
 
 
 if __name__ == "__main__":
+
+    print(get_config().fantom_key)
+    print(get_config().wallet)
+
     status = DefiStatus("hector.ini")
     assert(status.is_first())
 

@@ -10,7 +10,6 @@ from ftm_addresses import factory_addresses, router_addresses
 
 if __name__ == "__main__":
 
-
     config_object = get_config()
     address = config_object["address"]
     wallet_address = address["wallet_address"]
