@@ -10,21 +10,18 @@ class Hector:
     def __init__(self, 
                         swap,
                         txManager,
-                        profileExecutor
+                        profileExecutor,
+                        defiStatus
                         ):
         web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.web3 = web3
         self.gas = 500080
         self.contract = web3.eth.contract(address=Web3.toChecksumAddress(hector_contract_address), abi=hector_abi)
-        self.hector_config_path = "hector.ini"
-        
-        self.section_title = "hector"
-        self.last_check_module_title = "last_check"
-        self.amount_title = "amount"
-        self.profit_title = "profit"
+
         self.swap:Swap = swap
         self.txManager:TransactionManager = txManager
         self.profileExecutor:ProfileExecutor = profileExecutor
+        self.defiStatus:DefiStatus = defiStatus
 
 
     def amountSHec(self):
@@ -33,31 +30,18 @@ class Hector:
     def check_stack_status(self):
         #ct = datetime.datetime.now()
         #ts = ct.timestamp()
-        config_object = ConfigParser()
-        read_result = config_object.read(self.hector_config_path)
+        self.defiStatus.load()
         
         amount = self.amountSHec()
         
-        if (len(read_result) == 0):
-            self.persist_update(config_object = config_object, amount = amount, profit = 0.3)
+        if (self.defiStatus.is_first()):
+            self.defiStatus.save(amount = amount, profit = 0.3)
         else:
-            hec_config = config_object[self.section_title]
-            last_amount = float(hec_config[self.amount_title])
-            profit = float(hec_config[self.profit_title])
+            last_amount = self.defiStatus.last_amount
+            profit = self.defiStatus.profit
             if (last_amount < amount):
                 self.haverst_profit(last_amount, profit, amount)
-                self.persist_update(config_object = config_object, amount = amount, profit = 0.3)
-
-
-    def persist_update(self, config_object, amount, profit):
-        print(f"new amount: {amount} profit {profit}")
-        config_object[self.section_title] = {
-                            self.amount_title: amount,
-                            self.profit_title: profit
-                        }
-        with open(self.hector_config_path , 'w') as configfile:
-            config_object.write(configfile)
-
+                self.defiStatus.save(amount = amount, profit = 0.3)
 
     def haverst_profit(self, last_amount, profit, current_amount):
         haverst_amount = (current_amount - last_amount) * profit 
@@ -97,7 +81,8 @@ def get_hector():
     return Hector(
         swap=swap,
         txManager=txManager,
-        profileExecutor = profileExecutor
+        profileExecutor = profileExecutor,
+        defiStatus = DefiStatus("hector.ini")
     )
 
 
@@ -109,5 +94,5 @@ if __name__ == "__main__":
 
     #print(hector.unstake(156))
     #print(hector.unstake(15456900))
-    print(hector.amountSHec())
+    #print(hector.amountSHec())
     #hector.check_stack_status()
