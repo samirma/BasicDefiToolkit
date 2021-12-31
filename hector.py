@@ -1,20 +1,20 @@
 from web3 import Web3
 import time
 from swap.swap import *
-from addresses.ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
+from addresses.ftm_addresses import token_address_dict, ftm_provider, hector_abi, hector_contract_address
 from profile_executor import *
 from config import *
+from swap.router_addresses import spooky_router
 
 class Hector:
     def __init__(self, 
+                        web3,
                         swap,
                         txManager,
                         profileExecutor,
                         defiStatus
                         ):
-        web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.web3 = web3
-        self.gas = 500080
         self.contract = web3.eth.contract(address=Web3.toChecksumAddress(hector_contract_address), abi=hector_abi)
 
         self.swap:Swap = swap
@@ -63,14 +63,18 @@ def get_hector():
 
     config_object:Config = get_config()
 
+    web3 = Web3(Web3.HTTPProvider(ftm_provider))
+
     txManager = TransactionManager(
         key = config_object.fantom_key,
         wallet_address = config_object.wallet
     )
 
     swap: Swap = Swap(
+        web3 = web3,
         txManager=txManager,
-        wallet_address = config_object.wallet
+        wallet_address = config_object.wallet,
+        router_address = spooky_router
     )
     
     profileExecutor = ProfileExecutor(
@@ -82,6 +86,7 @@ def get_hector():
     )
     
     return Hector(
+        web3 = web3,
         swap=swap,
         txManager=txManager,
         profileExecutor = profileExecutor,

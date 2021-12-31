@@ -17,17 +17,9 @@ charge_abi = load_abi("charge.abi")
 lp_static_busd_contract_address = "0x7692bCB5F646abcdFA436658dC02d075856ac33C"
 share_contract_address = "0x53D55291c12EF31b3f986102933177815DB72b3A"
 
-provider =  "https://bsc-dataseed.binance.org/"
+bsc_provider =  "https://bsc-dataseed.binance.org/"
 
-factory_addresses = {
-                        'pancake': '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73'
-                     }
-
-router_addresses = {
-                        'pancake': '0x10ED43C718714eb63d5aA57B78B54704E256024E'
-                    }
-
-token_address_dict = {
+bsc_token_address_dict = {
     'CHARGE': "0x1C6bc8e962427dEb4106aE06A7fA2d715687395c",
     'STATIC': "0x7dEb9906BD1d77B410a56E5C23c36340Bd60C983",
     'PULSE': "0xbceBAeAF1160Edc84D81A8f2D075858eE3960e9E",

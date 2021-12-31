@@ -1,23 +1,22 @@
 from web3 import Web3
-import json
-from configparser import ConfigParser
-import datetime
 from transaction_manager import * 
-from addresses.ftm_addresses import token_abi, pairs_abi, router_abi, factory_abi, ftm_provider
-from addresses.ftm_addresses import factory_addresses, router_addresses
-from addresses.ftm_addresses import token_address_dict, pair_address_dict
+from addresses.ftm_addresses import token_abi, router_abi
+from addresses.ftm_addresses import token_address_dict
 from time import sleep, time
 
 
 class Swap:
 
     def __init__(self,
+                web3,
                 txManager,
-                wallet_address
+                wallet_address,
+                router_address
             ):
-        self.web3 = Web3(Web3.HTTPProvider(ftm_provider))
+        self.web3 = web3
         self.txManager:TransactionManager = txManager
         self.wallet_address = wallet_address
+        self.router_address = router_address
 
     def swap(self,
             amount, 
@@ -25,20 +24,17 @@ class Swap:
             output 
         ):
         web3 = self.web3
-        #dex = 'sushi'
-        dex = 'spooky'
+        
         self.buy(web3, 
                 token_address_in = input, 
                 token_address_out = output, 
-                thisdex = dex, 
                 amount=amount
                 )
 
     def buy(self, 
                 web3, 
                 token_address_in, 
-                token_address_out, 
-                thisdex,
+                token_address_out,
                 amount
                 ):
                 
@@ -46,8 +42,7 @@ class Swap:
         DECIMALS = self.decimals(token_address_in)
         amount = int(amount * DECIMALS)
 
-        router_address = router_addresses[thisdex]
-        routerContract = web3.eth.contract(address=web3.toChecksumAddress(router_address), abi=router_abi)
+        routerContract = web3.eth.contract(address=web3.toChecksumAddress(self.router_address), abi=router_abi)
 
         amount_out = routerContract.functions.getAmountsOut(amount, [base, Web3.toChecksumAddress(token_address_out)]).call()[-1]
         min_tokens = int(amount_out * (1 - (50 / 100)))
