@@ -1,15 +1,10 @@
 from web3 import Web3
 import json
-from configparser import ConfigParser
 import datetime
 from swap.swap import *
 from ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
 from profile_executor import *
-
-def get_config():
-    config_object = ConfigParser()
-    config_object.read("config.ini")
-    return config_object
+from config import *
 
 class Hector:
     def __init__(self, 
@@ -81,15 +76,13 @@ class Hector:
         )
 
 def get_hector():
-    config_object = get_config()
-    wallet_address = config_object["address"]
-    key = config_object["keys"]["hector"]
+    config_object:Config = get_config()
     txManager = TransactionManager()
 
     swap: Swap = Swap(
         txManager=txManager,
-        key = key,
-        wallet_address = wallet_address
+        key = config_object.fantom_key,
+        wallet_address = config_object.wallet
     )
 
     
@@ -117,5 +110,4 @@ if __name__ == "__main__":
     #print(hector.unstake(156))
     #print(hector.unstake(15456900))
     print(hector.amountSHec())
-    print(hector.amountHec())
     #hector.check_stack_status()

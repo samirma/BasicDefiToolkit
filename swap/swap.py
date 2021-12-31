@@ -7,7 +7,6 @@ from ftm_addresses import token_abi, pairs_abi, router_abi, factory_abi, ftm_pro
 from ftm_addresses import factory_addresses, router_addresses
 from ftm_addresses import token_address_dict, pair_address_dict
 from time import sleep, time
-from decimal import Decimal
 
 
 class Swap:
@@ -79,7 +78,6 @@ class Swap:
     def get_balance_by_address(self, token_address_in, wallet_address):
         web3 = self.web3
         token_contract_checked = web3.toChecksumAddress(token_address_in)
-        print(f"aaaaaaaaa {wallet_address}")
         wallet_address_checked = web3.toChecksumAddress(wallet_address)
         return self.get_balance_by_checked_address(token_address = token_contract_checked, wallet_address = wallet_address_checked) 
         
