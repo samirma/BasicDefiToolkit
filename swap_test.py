@@ -9,9 +9,7 @@ from hector import get_config
 from ftm_addresses import factory_addresses, router_addresses
 
 if __name__ == "__main__":
-    swap: Swap = Swap(
-        txManager=TransactionManager()
-    )
+
 
     config_object = get_config()
     address = config_object["address"]
@@ -19,7 +17,13 @@ if __name__ == "__main__":
     
     key = config_object["keys"]["hector"]
 
-    SYMBOL = 'DAI'
+    swap: Swap = Swap(
+        txManager=TransactionManager(),
+        key = key,
+        wallet_address = wallet_address
+    )
+
+    SYMBOL = 'HEC'
 
     balance = swap.get_balance(
         coin_name=SYMBOL,
@@ -27,22 +31,25 @@ if __name__ == "__main__":
     )
 
     print(f"Recovered balance: {balance}")
-    print(swap.convert_amount_to_swap(0.9999999, token_address_dict[SYMBOL]))
     
-    human_balance = swap.convert_amount_to_human(balance, token_address_dict[SYMBOL])
+    human_balance = swap.convert_amount_to_human(115892, token_address_dict['FTM'])
 
     print(f"Human from balance {human_balance}")
 
-    #print(swap.web3.eth.get_transaction('0xafa261a50bfed88737a4d8482ddb3c72e1eeae7b74a64921e84939ae008ac2a2'))
-    buy_amount = swap.convert_amount_to_swap(0.01, token_address_dict[SYMBOL])
-    print(f"###### {buy_amount}")
+    transaction_hash = '0x543a6f77957c174390a39132b4b8d1c7bf5c4ea58a165c02ef624855aeb70d70'
 
+    gas_price = swap.web3.eth.getTransaction(transaction_hash).gasPrice
+    gas_used = swap.web3.eth.getTransactionReceipt(transaction_hash).gasUsed
 
-    #exit(0)
+    transaction_cost = gas_price * gas_used
+
+    #print(swap.web3.eth.get_transaction('0x543a6f77957c174390a39132b4b8d1c7bf5c4ea58a165c02ef624855aeb70d70'))
+
+    print(f"###### {transaction_cost} -> {swap.convert_amount_to_human(transaction_cost, token_address_dict['FTM'])}")
+
+    exit(0)
     swap.swap(
-        wallet_address = wallet_address,
-        amount=0.1,
-        input='DAI',
-        output='HEC',
-        key = key
+        amount=0.001609807,
+        input=token_address_dict['HEC'],
+        output=token_address_dict['DAI']
     )

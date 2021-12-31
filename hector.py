@@ -4,7 +4,7 @@ from configparser import ConfigParser
 import datetime
 from swap.swap import *
 from ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
-from web3.gas_strategies.time_based import medium_gas_price_strategy
+from profile_executor import *
 
 def get_config():
     config_object = ConfigParser()
@@ -13,16 +13,13 @@ def get_config():
 
 class Hector:
     def __init__(self, 
-                        key,
-                        wallet_address, 
                         swap,
-                        txManager
+                        txManager,
+                        profileExecutor
                         ):
         web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.web3 = web3
-        self.wallet_address = wallet_address
         self.gas = 500080
-        self.key = key
         self.contract = web3.eth.contract(address=Web3.toChecksumAddress(hector_contract_address), abi=hector_abi)
         self.hector_config_path = "hector.ini"
         
@@ -32,17 +29,11 @@ class Hector:
         self.profit_title = "profit"
         self.swap:Swap = swap
         self.txManager:TransactionManager = txManager
+        self.profileExecutor:ProfileExecutor = profileExecutor
 
-
-    def amountHec(self):
-        return self.amount(token_address_dict['HEC'])
 
     def amountSHec(self):
-        return self.amount(token_address_dict['SHEC'])
-
-    def amount(self, address):
-        contract = self.web3.eth.contract(Web3.toChecksumAddress(address), abi=token_abi)
-        return contract.functions.balanceOf(self.wallet_address).call()
+        return self.swap.get_balance_by_address(token_address_dict['SHEC'], wallet_address=self.swap.wallet_address)
 
     def check_stack_status(self):
         #ct = datetime.datetime.now()
@@ -74,11 +65,11 @@ class Hector:
 
 
     def haverst_profit(self, last_amount, profit, current_amount):
-        if (last_amount < current_amount):
-            haverst_amount = (current_amount - last_amount) * profit 
-            print(f"To be havested {haverst_amount}")
-            #self.unstake( haverst_amount )
-            #self.swap.swap()
+        haverst_amount = (current_amount - last_amount) * profit 
+        print(f"To be havested {haverst_amount}")
+        if (last_amount < current_amount and False):
+            self.unstake( haverst_amount )
+            self.profileExecutor.execute_profit(self.web3)
 
     def unstake(self, amount):
         fnUnstake = self.contract.functions.unstake(amount, True)
@@ -91,13 +82,29 @@ class Hector:
 
 def get_hector():
     config_object = get_config()
-    address = config_object["address"]
-    txManager=TransactionManager()
+    wallet_address = config_object["address"]
+    key = config_object["keys"]["hector"]
+    txManager = TransactionManager()
+
+    swap: Swap = Swap(
+        txManager=txManager,
+        key = key,
+        wallet_address = wallet_address
+    )
+
+    
+    profileExecutor = ProfileExecutor(
+        txManager = txManager,
+        origin_address=token_address_dict['HEC'],
+        dest_address=token_address_dict['DAI'],
+        transaction_address=token_address_dict['FTM'],
+        swap = swap
+    )
+    
     return Hector(
-        wallet_address=address["wallet_address"],
-        key = config_object["keys"]["hector"],
-        swap=Swap(txManager),
-        txManager=txManager
+        swap=swap,
+        txManager=txManager,
+        profileExecutor = profileExecutor
     )
 
 

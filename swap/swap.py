@@ -12,18 +12,21 @@ from decimal import Decimal
 
 class Swap:
 
-    def __init__(self, txManager):
+    def __init__(self,
+                txManager,
+                key,
+                wallet_address
+            ):
         self.web3 = Web3(Web3.HTTPProvider(ftm_provider))
         self.txManager:TransactionManager = txManager
+        self.key = key
+        self.wallet_address = wallet_address
 
-    def swap(self, 
-            wallet_address, 
+    def swap(self,
             amount, 
             input, 
-            output, 
-            key
+            output 
         ):
-
         web3 = self.web3
         token_address_in = token_address_dict[input]
         #dex = 'sushi'
@@ -33,21 +36,15 @@ class Swap:
                 token_address_in = token_address_in, 
                 token_address_out = token_address_out, 
                 thisdex = dex, 
-                wallet_address = wallet_address, 
-                amount=amount,
-                holy_key=key
+                amount=amount
                 )
 
     def buy(self, 
                 web3, 
                 token_address_in, 
                 token_address_out, 
-                thisdex, 
-                wallet_address, 
-                holy_key,
-                amount, 
-                slippage=0.05, 
-                dt=20
+                thisdex,
+                amount
                 ):
                 
         base = Web3.toChecksumAddress(token_address_in)
@@ -64,21 +61,25 @@ class Swap:
             amount,
             min_tokens,
             [base, Web3.toChecksumAddress(token_address_out)],
-            Web3.toChecksumAddress(wallet_address),
+            Web3.toChecksumAddress(self.wallet_address),
             deadline = int(time() + + 240)
         )
 
         self.txManager.execute_transation(
             funTx=funSwap,
             web3 = web3,
-            wallet_address = wallet_address,
-            key = holy_key
+            wallet_address = self.wallet_address,
+            key = self.key
         )
 
     def get_balance(self, coin_name, wallet_address):
-        web3 = self.web3
         token_address_in = token_address_dict[coin_name]
+        return self.get_balance_by_address(token_address = token_address_in, wallet_address = wallet_address) 
+        
+    def get_balance_by_address(self, token_address_in, wallet_address):
+        web3 = self.web3
         token_contract_checked = web3.toChecksumAddress(token_address_in)
+        print(f"aaaaaaaaa {wallet_address}")
         wallet_address_checked = web3.toChecksumAddress(wallet_address)
         return self.get_balance_by_checked_address(token_address = token_contract_checked, wallet_address = wallet_address_checked) 
         
