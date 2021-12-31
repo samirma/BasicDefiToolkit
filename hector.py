@@ -40,7 +40,9 @@ class Hector:
             print(f"{last_amount} < {amount}")
             if (last_amount < amount):
                 self.haverst_profit(last_amount, profit, amount)
-                self.defiStatus.save(amount = amount, profit = 0.3)
+                time.sleep(30)
+                amount = self.amountSHec()
+                self.defiStatus.save(amount = amount, profit = profit)
 
     def haverst_profit(self, last_amount, profit, current_amount):
         haverst_amount = int((current_amount - last_amount) * profit)

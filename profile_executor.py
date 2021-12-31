@@ -66,7 +66,4 @@ if __name__ == "__main__":
         swap = swap
     )
 
-    profileExecutor.execute_profit(web3)
-
-
-        
+    #profileExecutor.execute_profit(web3)
