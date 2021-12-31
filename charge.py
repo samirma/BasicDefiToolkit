@@ -1,18 +1,18 @@
 from web3 import Web3
 import time
 from swap.swap import *
-from addresses.ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
+from addresses.bsc_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address, provider
 from profile_executor import *
 from config import *
 
-class Hector:
+class ChargeDefi:
     def __init__(self, 
                         swap,
                         txManager,
                         profileExecutor,
                         defiStatus
                         ):
-        web3 = Web3(Web3.HTTPProvider(ftm_provider))
+        web3 = Web3(Web3.HTTPProvider(provider))
         self.web3 = web3
         self.gas = 500080
         self.contract = web3.eth.contract(address=Web3.toChecksumAddress(hector_contract_address), abi=hector_abi)
@@ -59,7 +59,7 @@ class Hector:
             web3=self.web3
         )
 
-def get_hector():
+def get_chargeDefi():
 
     config_object:Config = get_config()
 
@@ -75,23 +75,23 @@ def get_hector():
     
     profileExecutor = ProfileExecutor(
         txManager = txManager,
-        origin_address=token_address_dict['HEC'],
-        dest_address=token_address_dict['DAI'],
-        transaction_address=token_address_dict['FTM'],
+        origin_address=token_address_dict['CHARGE'],
+        dest_address=token_address_dict['BUSD'],
+        transaction_address=token_address_dict['BNB'],
         swap = swap
     )
     
-    return Hector(
+    return ChargeDefi(
         swap=swap,
         txManager=txManager,
         profileExecutor = profileExecutor,
-        defiStatus = DefiStatus("hector.ini")
+        defiStatus = DefiStatus("chargeDefi.ini")
     )
 
 
 if __name__ == "__main__":
 
-    hector:Hector = get_hector()
+    chargeDefi:ChargeDefi = get_chargeDefi()
     
-    print(hector.check_stack_status())
+    print(chargeDefi.check_stack_status())
 

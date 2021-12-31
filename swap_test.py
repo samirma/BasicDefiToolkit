@@ -3,10 +3,10 @@ import json
 from configparser import ConfigParser
 import datetime
 from swap.swap import *
-from ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
+from addresses.ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
 from web3.gas_strategies.time_based import medium_gas_price_strategy
 from hector import get_config
-from ftm_addresses import factory_addresses, router_addresses
+from addresses.ftm_addresses import factory_addresses, router_addresses
 
 if __name__ == "__main__":
 

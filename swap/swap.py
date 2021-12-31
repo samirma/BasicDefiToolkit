@@ -3,9 +3,9 @@ import json
 from configparser import ConfigParser
 import datetime
 from transaction_manager import * 
-from ftm_addresses import token_abi, pairs_abi, router_abi, factory_abi, ftm_provider
-from ftm_addresses import factory_addresses, router_addresses
-from ftm_addresses import token_address_dict, pair_address_dict
+from addresses.ftm_addresses import token_abi, pairs_abi, router_abi, factory_abi, ftm_provider
+from addresses.ftm_addresses import factory_addresses, router_addresses
+from addresses.ftm_addresses import token_address_dict, pair_address_dict
 from time import sleep, time
 
 
