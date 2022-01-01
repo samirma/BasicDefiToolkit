@@ -33,7 +33,7 @@ class ChargeDefi:
 
     def haverst_profit(self):
         self.clain_charge()
-        time.sleep(30)
+        time.sleep(5)
         self.claim_LP_stake_busd()
         time.sleep(30)
         self.profileExecutor.execute_profit(self.web3)

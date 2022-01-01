@@ -39,7 +39,7 @@ class TransactionManager:
         txStatus = status.status
         success = int(txStatus) == 1
         if success:
-            print(style.YELLOW+"SuccessFully {}".format(hashes)+style.RESET)
+            print(style.GREEN+"TRANSACTION Successed {}".format(hashes)+style.RESET)
         else:
             print(style.MAGENTA+"TRANSACTION FAILED !!"+style.RESET)
 

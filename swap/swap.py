@@ -94,7 +94,7 @@ class Swap:
         symbolDecimals = self.decimal_value(token_address)
         return amount / 10 ** symbolDecimals
 
-    def approve_spend(self, token_address_in, router_address, wallet_address, key, total_max_spend=1.0):
+    def approve_spend(self, token_address_in, router_address, wallet_address, total_max_spend=1.0):
         web3 = self.web3
         cs_router_address = web3.toChecksumAddress(router_address)
         cs_wallet_address = web3.toChecksumAddress(wallet_address)

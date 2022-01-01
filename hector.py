@@ -1,10 +1,10 @@
 from web3 import Web3
-import time
 from swap.swap import *
 from addresses.ftm_addresses import token_address_dict, ftm_provider, hector_abi, hector_contract_address
 from profile_executor import *
 from config import *
 from swap.router_addresses import spooky_router
+import time
 
 class Hector:
     def __init__(self, 
@@ -97,6 +97,5 @@ def get_hector():
 if __name__ == "__main__":
 
     hector:Hector = get_hector()
-    
     print(hector.check_stack_status())
 
