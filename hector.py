@@ -33,7 +33,7 @@ class Hector:
         
         if (self.defiStatus.is_first()):
             print("First read")
-            self.defiStatus.save(amount = amount, profit = 0.3)
+            self.defiStatus.save(amount = amount, profit = 0.3, transactions_spent=0)
         else:
             last_amount = self.defiStatus.amount
             profit = self.defiStatus.profit
@@ -42,7 +42,7 @@ class Hector:
                 self.haverst_profit(last_amount, profit, amount)
                 time.sleep(30)
                 amount = self.amountSHec()
-                self.defiStatus.save(amount = amount, profit = profit)
+                self.defiStatus.save(amount = amount, profit = profit, transactions_spent = self.txManager.get_total_fees(self.web3) )
 
     def haverst_profit(self, last_amount, profit, current_amount):
         haverst_amount = int((current_amount - last_amount) * profit)
