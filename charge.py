@@ -28,7 +28,7 @@ class ChargeDefi:
 
     def check_stack_status(self):
         self.defiStatus.load()
-        if (self.canClaimLPStakeBusd() and self.canClaimCharge()):
+        if (self.can_claim_charge() and self.can_claim_LP_stake_busd()):
             self.haverst_profit()
 
     def haverst_profit(self):
@@ -38,8 +38,15 @@ class ChargeDefi:
         time.sleep(30)
         self.profileExecutor.execute_profit(self.web3)
 
-    def unstake(self, amount):
-        fnUnstake = self.contract.functions.unstake(amount, True)
+    def clain_charge(self):
+        fnUnstake = self.charge.functions.claimReward()
+        self.txManager.execute_transation(
+            funTx=fnUnstake,
+            web3=self.web3
+        )
+
+    def claim_LP_stake_busd(self):
+        fnUnstake = self.lp_stake.functions.claimReward()
         self.txManager.execute_transation(
             funTx=fnUnstake,
             web3=self.web3
@@ -90,6 +97,8 @@ def get_chargeDefi():
 if __name__ == "__main__":
 
     chargeDefi:ChargeDefi = get_chargeDefi()
+
+    print(chargeDefi.check_stack_status())
     
     print(chargeDefi.can_claim_charge())
     print(chargeDefi.can_claim_LP_stake_busd())
