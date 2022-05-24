@@ -12,16 +12,23 @@ router_abi = load_abi("router.abi")
 factory_abi = load_abi("factory.abi")
 
 hector_abi = load_abi("hector.abi")
+hector_abi = load_abi("comb.abi")
 
 hector_contract_address = "0xd12930c8deedafd788f437879cba1ad1e3908cc5"
+hector_contract_address = "0xd12930c8deedafd788f437879cba1ad1e3908cc5"
+comb_contract_address = "0x624e2a2626e61627b53c402682c125c6ce45e032"
 
 ftm_provider = "https://rpc.ftm.tools/"
 
 
 token_address_dict = {
+    'COMB': "0xaE45a827625116d6C0C40B5D7359EcF68F8e9AFD",
+    'BEETS': "0xF24Bcf4d1e507740041C9cFd2DddB29585aDCe1e",
+    'BOO': "0x841fad6eae12c286d1fd18d1d525dffa75c7effe",
+    'SPIRIT': "0x5Cc61A78F164885776AA610fb0FE1257df78E59B",
+    'SCREAM': "0x657A1861c15A3deD9AF0B6799a195a249ebdCbc6",
     'FTM': "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
     'WFTM': "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
-    'BOO': "0x841fad6eae12c286d1fd18d1d525dffa75c7effe",
     'HEC': "0x5C4FDfc5233f935f20D2aDbA572F770c2E377Ab0",
     'SHEC' : "0x75bdef24285013387a47775828bec90b91ca9a5f",
     'xBOO': "0xa48d959AE2E88f1dAA7D5F611E01908106dE7598",
@@ -29,7 +36,6 @@ token_address_dict = {
     'WBTC': "0x321162Cd933E2Be498Cd2267a90534A804051b11",
     'BNB': "0xD67de0e0a0Fd7b15dC8348Bb9BE742F3c5850454",
     'USDC': "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
-    'CREAM': "0x657A1861c15A3deD9AF0B6799a195a249ebdCbc6",
     'COVER': "0xB01E8419d842beebf1b70A7b5f7142abbaf7159D",
     'BAND': "0x46E7628E8b4350b2716ab470eE0bA1fa9e76c6C5",
     'CRV': "0x1E4F97b9f9F913c46F1632781732927B9019C68b",
