@@ -27,9 +27,11 @@ class TransactionManager:
         nonce = web3.eth.getTransactionCount(self.wallet_address)
         tx = funTx.buildTransaction({
             'from': self.wallet_address,
-            'gas': funTx.estimateGas({"from": self.wallet_address, "gasPrice": web3.eth.gas_price}),
-            'nonce': nonce,
-            "gasPrice": web3.eth.gas_price
+            'gas': web3.eth.estimateGas(funTx),
+            'gasPrice': web3.eth.generateGasPrice(funTx),
+            #'gas': funTx.estimateGas({"from": self.wallet_address, "gasPrice": web3.eth.gas_price}),
+            #"gasPrice": web3.eth.gas_price,
+            'nonce': nonce
         })
         signed_tx = web3.eth.account.signTransaction(tx, self.key)
         tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
