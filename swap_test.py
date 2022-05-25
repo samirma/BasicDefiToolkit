@@ -6,45 +6,40 @@ from swap.swap import *
 from addresses.ftm_addresses import token_address_dict, token_abi, hector_abi, hector_contract_address
 from web3.gas_strategies.time_based import medium_gas_price_strategy
 from hector import get_config
-from addresses.ftm_addresses import factory_addresses, router_addresses
+from swap.router_addresses import spooky_router
+from config import *
+from addresses.ftm_addresses import token_address_dict, ftm_provider, hector_abi, comb_contract_address
 
 if __name__ == "__main__":
 
-    config_object = get_config()
-    address = config_object["address"]
-    wallet_address = address["wallet_address"]
-    
-    key = config_object["keys"]["hector"]
+    config_object:Config = get_config()
 
-    swap: Swap = Swap(
-        txManager=TransactionManager(),
-        key = key,
-        wallet_address = wallet_address
+    web3 = Web3(Web3.HTTPProvider(ftm_provider))
+
+    txManager = TransactionManager(
+        key = config_object.fantom_key,
+        wallet_address = config_object.wallet
     )
 
-    SYMBOL = 'HEC'
+    swap: Swap = Swap(
+        web3 = web3,
+        txManager=txManager,
+        wallet_address = config_object.wallet,
+        router_address = spooky_router
+    )
+
+    SYMBOL = 'BEETS'
 
     balance = swap.get_balance(
         coin_name=SYMBOL,
-        wallet_address=wallet_address
+        wallet_address=config_object.wallet
     )
 
     print(f"Recovered balance: {balance}")
     
-    human_balance = swap.convert_amount_to_human(115892, token_address_dict['FTM'])
+    amount = swap.getAmountsOut(666025450995815107, token_address_dict[SYMBOL], token_address_dict["FTM"])
 
-    print(f"Human from balance {human_balance}")
-
-    transaction_hash = '0x543a6f77957c174390a39132b4b8d1c7bf5c4ea58a165c02ef624855aeb70d70'
-
-    gas_price = swap.web3.eth.getTransaction(transaction_hash).gasPrice
-    gas_used = swap.web3.eth.getTransactionReceipt(transaction_hash).gasUsed
-
-    transaction_cost = gas_price * gas_used
-
-    #print(swap.web3.eth.get_transaction('0x543a6f77957c174390a39132b4b8d1c7bf5c4ea58a165c02ef624855aeb70d70'))
-
-    print(f"###### {transaction_cost} -> {swap.convert_amount_to_human(transaction_cost, token_address_dict['FTM'])}")
+    print(f"getAmountsOut {amount}")
 
     exit(0)
     swap.swap(

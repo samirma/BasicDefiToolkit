@@ -26,13 +26,12 @@ class Comb:
 
     def sell(self, origin_address, dest_address):
         balance = self.amount(origin_address)
-        human_balance = self.swap.convert_amount_to_human(balance, origin_address)
 
-        print(f"Swap {human_balance} from {origin_address} to {dest_address}")
+        print(f"Swap {balance} from {origin_address} to {dest_address}")
 
         #return 
         self.swap.swap(
-            amount=human_balance,
+            amount=balance,
             input=origin_address,
             output=dest_address
         )
@@ -43,7 +42,7 @@ class Comb:
         self.sell(token_address_dict['BEETS'], dest_address)
         self.sell(token_address_dict['BOO'], dest_address)
         self.sell(token_address_dict['SPIRIT'], dest_address)
-        self.sell(token_address_dict['SCREAM'], dest_address)
+        self.sell(token_address_dict['SCREAM'], token_address_dict["FTM"])
 
 
     def claim(self):
@@ -83,7 +82,7 @@ if __name__ == "__main__":
 
     comb:Comb = get_comb()
     
-    #comb.claim()
+    comb.claim()
 
     comb.sell_all()
 

@@ -17,6 +17,8 @@ class Swap:
         self.txManager:TransactionManager = txManager
         self.wallet_address = wallet_address
         self.router_address = router_address
+        self.routerContract = web3.eth.contract(address=web3.toChecksumAddress(self.router_address), abi=router_abi)
+
 
     def swap(self,
             amount, 
@@ -31,8 +33,20 @@ class Swap:
                 amount=amount
                 )
 
-    def getAmountsOut(self, amount):
-        amount_out = routerContract.functions.getAmountsOut(amount, [base, Web3.toChecksumAddress(token_address_out)]).call()[-1]
+    def get_path(self, token_address_in, token_address_out):
+        path = [Web3.toChecksumAddress(token_address_in), Web3.toChecksumAddress(token_address_dict["FTM"])]
+
+        if (token_address_dict["FTM"] != token_address_out):
+            path.append(Web3.toChecksumAddress(token_address_out))
+        
+        return path
+
+    def getAmountsOut(self, amount, token_address_in, token_address_out):
+        result = self.routerContract.functions.getAmountsOut(amount, 
+                        self.get_path(token_address_in, token_address_out)
+                        ).call()
+        print(result)
+        amount_out = result[-1]
         return amount_out
 
     def buy(self, 
@@ -41,19 +55,21 @@ class Swap:
                 token_address_out,
                 amount
                 ):
-                
-        routerContract = web3.eth.contract(address=web3.toChecksumAddress(self.router_address), abi=router_abi)
 
-        amount_out = getAmountsOut(amount)
-        
+        path = self.get_path(token_address_in, token_address_out)
+        print("#######")
+        print(amount)
+        amount_out = self.getAmountsOut(amount, token_address_in, token_address_out)
+        print("####### $$$$$$$$")
+
         min_tokens = int(amount_out * (1 - (50 / 100)))
         
         print(amount_out)
 
-        funSwap = routerContract.functions.swapExactTokensForTokens(
+        funSwap = self.routerContract.functions.swapExactTokensForTokens(
             amount,
             min_tokens,
-            [base, Web3.toChecksumAddress(token_address_out)],
+            self.get_path(token_address_in, token_address_out),
             Web3.toChecksumAddress(self.wallet_address),
             deadline = int(time() + + 240)
         )
@@ -65,7 +81,7 @@ class Swap:
 
     def get_balance(self, coin_name, wallet_address):
         token_address_in = token_address_dict[coin_name]
-        return self.get_balance_by_address(token_address = token_address_in, wallet_address = wallet_address) 
+        return self.get_balance_by_address(token_address_in = token_address_in, wallet_address = wallet_address) 
         
     def get_balance_by_address(self, token_address_in, wallet_address):
         web3 = self.web3
