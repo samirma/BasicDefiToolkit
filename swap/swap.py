@@ -31,6 +31,10 @@ class Swap:
                 amount=amount
                 )
 
+    def getAmountsOut(self, amount):
+        amount_out = routerContract.functions.getAmountsOut(amount, [base, Web3.toChecksumAddress(token_address_out)]).call()[-1]
+        return amount_out
+
     def buy(self, 
                 web3, 
                 token_address_in, 
@@ -38,15 +42,10 @@ class Swap:
                 amount
                 ):
                 
-        base = Web3.toChecksumAddress(token_address_in)
-        DECIMALS = self.decimals(token_address_in)
-        amount = int(amount * DECIMALS)
-
         routerContract = web3.eth.contract(address=web3.toChecksumAddress(self.router_address), abi=router_abi)
 
-        print(amount)
-
-        amount_out = routerContract.functions.getAmountsOut(10, [base, Web3.toChecksumAddress(token_address_out)]).call()[-1]
+        amount_out = getAmountsOut(amount)
+        
         min_tokens = int(amount_out * (1 - (50 / 100)))
         
         print(amount_out)
