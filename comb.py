@@ -21,19 +21,20 @@ class Comb:
         self.defiStatus:DefiStatus = defiStatus
 
 
-    def amountSHec(self, token_address):
+    def amount(self, token_address):
         return self.swap.get_balance_by_address(token_address, wallet_address=self.swap.wallet_address)
 
     def sell(self, origin_address, dest_address):
+        balance = self.amount(origin_address)
         human_balance = self.swap.convert_amount_to_human(balance, origin_address)
 
-        print(f"Swap {human_balance} from {self.origin_address} to {dest_address}")
+        print(f"Swap {human_balance} from {origin_address} to {dest_address}")
 
         #return 
         self.swap.swap(
             amount=human_balance,
-            input=self.origin_address,
-            output=self.dest_address
+            input=origin_address,
+            output=dest_address
         )
 
     def sell_all(self):
@@ -43,6 +44,14 @@ class Comb:
         self.sell(token_address_dict['BOO'], dest_address)
         self.sell(token_address_dict['SPIRIT'], dest_address)
         self.sell(token_address_dict['SCREAM'], dest_address)
+
+
+    def claim(self):
+        fnUnstake = self.contract.functions.claim()
+        self.txManager.execute_transation(
+            funTx=fnUnstake,
+            web3=self.web3
+        )
 
 def get_comb():
 
@@ -74,7 +83,7 @@ if __name__ == "__main__":
 
     comb:Comb = get_comb()
     
-    comb.claim()
+    #comb.claim()
 
     comb.sell_all()
 

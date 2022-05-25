@@ -44,8 +44,12 @@ class Swap:
 
         routerContract = web3.eth.contract(address=web3.toChecksumAddress(self.router_address), abi=router_abi)
 
-        amount_out = routerContract.functions.getAmountsOut(amount, [base, Web3.toChecksumAddress(token_address_out)]).call()[-1]
+        print(amount)
+
+        amount_out = routerContract.functions.getAmountsOut(10, [base, Web3.toChecksumAddress(token_address_out)]).call()[-1]
         min_tokens = int(amount_out * (1 - (50 / 100)))
+        
+        print(amount_out)
 
         funSwap = routerContract.functions.swapExactTokensForTokens(
             amount,
