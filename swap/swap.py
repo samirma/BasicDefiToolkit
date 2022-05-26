@@ -3,22 +3,18 @@ from transaction_manager import *
 from addresses.ftm_addresses import token_abi, router_abi
 from addresses.ftm_addresses import token_address_dict
 from time import sleep, time
-
+from swap.router_addresses import spooky_router, spirit_router
 
 class Swap:
 
     def __init__(self,
                 web3,
                 txManager,
-                wallet_address,
-                router_address
+                wallet_address
             ):
         self.web3 = web3
         self.txManager:TransactionManager = txManager
         self.wallet_address = wallet_address
-        self.router_address = router_address
-        self.routerContract = web3.eth.contract(address=web3.toChecksumAddress(self.router_address), abi=router_abi)
-
 
     def swap(self,
             amount, 
@@ -38,16 +34,35 @@ class Swap:
 
         if (token_address_dict["FTM"] != token_address_out):
             path.append(Web3.toChecksumAddress(token_address_out))
-        
         return path
 
-    def getAmountsOut(self, amount, token_address_in, token_address_out):
-        result = self.routerContract.functions.getAmountsOut(amount, 
-                        self.get_path(token_address_in, token_address_out)
-                        ).call()
-        print(result)
-        amount_out = result[-1]
+    def getAmountsOut(self, amount, token_address_in, token_address_out, router):
+        amount_out = 0
+        try:
+            result = router.functions.getAmountsOut(amount, 
+                            self.get_path(token_address_in, token_address_out)
+                            ).call()
+            amount_out = result[-1]
+        except:
+            print("An exception occurred")        
+
         return amount_out
+
+    def select_contract(self, amount, token_address_in, token_address_out):
+        print(f"Select {amount}")
+        c1 = self.web3.eth.contract(address=self.web3.toChecksumAddress(spooky_router), abi=router_abi)
+        c2 = self.web3.eth.contract(address=self.web3.toChecksumAddress(spirit_router), abi=router_abi)
+
+        m1 = self.getAmountsOut(amount, token_address_in, token_address_out, c1)
+        m2 = self.getAmountsOut(amount, token_address_in, token_address_out, c2)
+        
+        if (m1 > m2):
+            print(f"Selected {m1}  > {m2}")
+            return c1
+        else:
+            print(f"Selected {m2}  > {m1}")
+            return c2
+
 
     def buy(self, 
                 web3, 
@@ -56,17 +71,14 @@ class Swap:
                 amount
                 ):
 
-        path = self.get_path(token_address_in, token_address_out)
-        print("#######")
-        print(amount)
-        amount_out = self.getAmountsOut(amount, token_address_in, token_address_out)
-        print("####### $$$$$$$$")
+        router = self.select_contract(amount, token_address_in, token_address_out)
+        amount_out = self.getAmountsOut(amount, token_address_in, token_address_out, router)
 
         min_tokens = int(amount_out * (1 - (50 / 100)))
         
         print(amount_out)
 
-        funSwap = self.routerContract.functions.swapExactTokensForTokens(
+        funSwap = router.functions.swapExactTokensForTokens(
             amount,
             min_tokens,
             self.get_path(token_address_in, token_address_out),

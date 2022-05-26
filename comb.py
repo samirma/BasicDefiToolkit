@@ -27,9 +27,16 @@ class Comb:
     def sell(self, origin_address, dest_address):
         balance = self.amount(origin_address)
 
+        if (balance == 0):
+            print(f"No balance {balance}")
+            return
+        
         print(f"Swap {balance} from {origin_address} to {dest_address}")
 
-        #return 
+        r = self.swap.select_contract(1, origin_address, dest_address)
+
+        print(r)
+ 
         self.swap.swap(
             amount=balance,
             input=origin_address,
@@ -39,10 +46,10 @@ class Comb:
     def sell_all(self):
         dest_address = token_address_dict['USDC']
         self.sell(token_address_dict['COMB'], dest_address)
-        self.sell(token_address_dict['BEETS'], dest_address)
-        self.sell(token_address_dict['BOO'], dest_address)
-        self.sell(token_address_dict['SPIRIT'], dest_address)
-        self.sell(token_address_dict['SCREAM'], token_address_dict["FTM"])
+        #self.sell(token_address_dict['BEETS'], dest_address)
+        #self.sell(token_address_dict['BOO'], dest_address)
+        #self.sell(token_address_dict['SPIRIT'], dest_address)
+        #self.sell(token_address_dict['SCREAM'], token_address_dict["FTM"])
 
 
     def claim(self):
@@ -66,8 +73,7 @@ def get_comb():
     swap: Swap = Swap(
         web3 = web3,
         txManager=txManager,
-        wallet_address = config_object.wallet,
-        router_address = spooky_router
+        wallet_address = config_object.wallet
     )
     
     return Comb(

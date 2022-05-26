@@ -24,8 +24,7 @@ if __name__ == "__main__":
     swap: Swap = Swap(
         web3 = web3,
         txManager=txManager,
-        wallet_address = config_object.wallet,
-        router_address = spooky_router
+        wallet_address = config_object.wallet
     )
 
     SYMBOL = 'BEETS'
