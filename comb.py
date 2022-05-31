@@ -24,14 +24,17 @@ class Comb:
     def amount(self, token_address):
         return self.swap.get_balance_by_address(token_address, wallet_address=self.swap.wallet_address)
 
-    def sell(self, origin_address, dest_address):
+    def sell(self, origin, dest):
+        origin_address = token_address_dict[origin]
+        dest_address = token_address_dict[dest]
+        
         balance = self.amount(origin_address)
 
         if (balance == 0):
             print(f"No balance {balance}")
             return
         
-        print(f"Swap {balance} from {origin_address} to {dest_address}")
+        print(f"Swap {balance} from {origin} to {dest}")
 
         r = self.swap.select_contract(1, origin_address, dest_address)
 
@@ -44,12 +47,12 @@ class Comb:
         )
 
     def sell_all(self):
-        dest_address = token_address_dict['USDC']
-        self.sell(token_address_dict['COMB'], dest_address)
-        #self.sell(token_address_dict['BEETS'], dest_address)
-        #self.sell(token_address_dict['BOO'], dest_address)
-        #self.sell(token_address_dict['SPIRIT'], dest_address)
-        #self.sell(token_address_dict['SCREAM'], token_address_dict["FTM"])
+        dest_address = 'USDC'
+        #self.sell('COMB', dest_address)
+        self.sell('BEETS', dest_address)
+        self.sell('BOO', dest_address)
+        self.sell('SPIRIT', dest_address)
+        self.sell('SCREAM', "FTM")
 
 
     def claim(self):
@@ -88,7 +91,7 @@ if __name__ == "__main__":
 
     comb:Comb = get_comb()
     
-    comb.claim()
+    #comb.claim()
 
     comb.sell_all()
 
