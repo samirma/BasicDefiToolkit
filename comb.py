@@ -48,7 +48,7 @@ class Comb:
 
     def sell_all(self):
         dest_address = 'USDC'
-        #self.sell('COMB', dest_address)
+        self.sell('COMB', dest_address)
         self.sell('BEETS', dest_address)
         self.sell('BOO', dest_address)
         self.sell('SPIRIT', dest_address)
@@ -61,6 +61,7 @@ class Comb:
             funTx=fnUnstake,
             web3=self.web3
         )
+        time.sleep(10)
 
 def get_comb():
 
@@ -91,7 +92,7 @@ if __name__ == "__main__":
 
     comb:Comb = get_comb()
     
-    #comb.claim()
+    comb.claim()
 
     comb.sell_all()
 
