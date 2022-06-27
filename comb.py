@@ -48,11 +48,19 @@ class Comb:
 
     def sell_all(self):
         dest_address = 'USDC'
-        self.sell('COMB', dest_address)
-        self.sell('BEETS', dest_address)
-        self.sell('BOO', dest_address)
         self.sell('SPIRIT', dest_address)
-        self.sell('SCREAM', "FTM")
+        print("Waiting")
+        time.sleep(3)
+        self.sell('SCREAM', dest_address)
+        print("Waiting")
+        time.sleep(3)
+        self.sell('COMB', dest_address)
+        print("Waiting")
+        time.sleep(3)
+        self.sell('BEETS', dest_address)
+        print("Waiting")
+        time.sleep(3)
+        self.sell('BOO', dest_address)
 
 
     def claim(self):
@@ -92,7 +100,11 @@ if __name__ == "__main__":
 
     comb:Comb = get_comb()
     
-    comb.claim()
+    #comb.claim()
+    
+    #time.sleep(3)
+    
+    comb:Comb = get_comb()
 
     comb.sell_all()
 
