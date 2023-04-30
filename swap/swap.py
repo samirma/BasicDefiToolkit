@@ -30,10 +30,10 @@ class Swap:
                 )
 
     def get_path(self, token_address_in, token_address_out):
-        path = [Web3.toChecksumAddress(token_address_in), Web3.toChecksumAddress(token_address_dict["FTM"])]
+        path = [Web3.to_checksum_address(token_address_in), Web3.to_checksum_address(token_address_dict["FTM"])]
 
         if (token_address_dict["FTM"] != token_address_out):
-            path.append(Web3.toChecksumAddress(token_address_out))
+            path.append(Web3.to_checksum_address(token_address_out))
         return path
 
     def getAmountsOut(self, amount, token_address_in, token_address_out, router):
@@ -50,8 +50,8 @@ class Swap:
 
     def select_contract(self, amount, token_address_in, token_address_out):
         print(f"Select {amount}")
-        c1 = self.web3.eth.contract(address=self.web3.toChecksumAddress(spooky_router), abi=router_abi)
-        c2 = self.web3.eth.contract(address=self.web3.toChecksumAddress(spirit_router), abi=router_abi)
+        c1 = self.web3.eth.contract(address=self.web3.to_checksum_address(spooky_router), abi=router_abi)
+        c2 = self.web3.eth.contract(address=self.web3.to_checksum_address(spirit_router), abi=router_abi)
 
         m1 = self.getAmountsOut(amount, token_address_in, token_address_out, c1)
         m2 = self.getAmountsOut(amount, token_address_in, token_address_out, c2)
@@ -82,7 +82,7 @@ class Swap:
             amount,
             min_tokens,
             self.get_path(token_address_in, token_address_out),
-            Web3.toChecksumAddress(self.wallet_address),
+            Web3.to_checksum_address(self.wallet_address),
             deadline = int(time() + + 240)
         )
 
@@ -97,8 +97,8 @@ class Swap:
         
     def get_balance_by_address(self, token_address_in, wallet_address):
         web3 = self.web3
-        token_contract_checked = web3.toChecksumAddress(token_address_in)
-        wallet_address_checked = web3.toChecksumAddress(wallet_address)
+        token_contract_checked = web3.to_checksum_address(token_address_in)
+        wallet_address_checked = web3.to_checksum_address(wallet_address)
         return self.get_balance_by_checked_address(token_address = token_contract_checked, wallet_address = wallet_address_checked) 
         
     def get_balance_by_checked_address(self, token_address, wallet_address):
@@ -110,7 +110,7 @@ class Swap:
         return self.web3.toWei(str(spend_amount), 'Ether')
 
     def decimal_value(self, token_address):
-        return self.decimal_value_by_checked_address(self.web3.toChecksumAddress(token_address))
+        return self.decimal_value_by_checked_address(self.web3.to_checksum_address(token_address))
 
     def decimal_value_by_checked_address(self, token_address):
         token_contract = self.web3.eth.contract(address=token_address, abi=token_abi)
@@ -127,9 +127,9 @@ class Swap:
 
     def approve_spend(self, token_address_in, router_address, wallet_address, total_max_spend=1.0):
         web3 = self.web3
-        cs_router_address = web3.toChecksumAddress(router_address)
-        cs_wallet_address = web3.toChecksumAddress(wallet_address)
-        token_contract_in = web3.eth.contract(address=web3.toChecksumAddress(token_address_in), abi=token_abi)
+        cs_router_address = web3.to_checksum_address(router_address)
+        cs_wallet_address = web3.to_checksum_address(wallet_address)
+        token_contract_in = web3.eth.contract(address=web3.to_checksum_address(token_address_in), abi=token_abi)
         allowed = int(token_contract_in.functions.allowance(cs_wallet_address, cs_router_address).call())
         print("Approved up to {}".format(allowed))
         max_amount = int(web3.toWei(total_max_spend, 'ether'))

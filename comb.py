@@ -14,7 +14,7 @@ class Comb:
                         defiStatus
                         ):
         self.web3 = web3
-        self.contract = web3.eth.contract(address=Web3.toChecksumAddress(comb_contract_address), abi=hector_abi)
+        self.contract = web3.eth.contract(address=Web3.to_checksum_address(comb_contract_address), abi=hector_abi)
 
         self.swap:Swap = swap
         self.txManager:TransactionManager = txManager
@@ -49,7 +49,7 @@ class Comb:
     def sell_all(self):
         dest_address = 'USDC'
         self.sell('SPIRIT', dest_address)
-        self.sell('SCREAM', dest_address)
+        #self.sell('SCREAM', dest_address)
         self.sell('COMB', dest_address)
         self.sell('BEETS', dest_address)
         self.sell('BOO', dest_address)

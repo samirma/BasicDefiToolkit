@@ -1,5 +1,5 @@
 from web3 import Web3
-from web3.contract import ContractFunction
+#from web3.contract import ContractFunction
 
 class style():
     BLACK = '\033[30m'
@@ -20,23 +20,23 @@ class TransactionManager:
         self.wallet_address = wallet_address
         self.key = key
     
-    def execute_transation(self, funTx: ContractFunction, web3: Web3):
+    def execute_transation(self, funTx, web3: Web3):
 
         print(f"Key {self.key} Wallet {self.wallet_address}")
 
-        nonce = web3.eth.getTransactionCount(self.wallet_address)
-        tx = funTx.buildTransaction({
+        nonce = web3.eth.get_transaction_count(self.wallet_address)
+        tx = funTx.build_transaction({
             'from': self.wallet_address,
-            #'gas': web3.eth.estimateGas(funTx),
+            #'gas': web3.eth.estimate_gas(funTx),
             #'gasPrice': web3.eth.generateGasPrice(funTx),
-            'gas': funTx.estimateGas({"from": self.wallet_address, "gasPrice": web3.eth.gas_price}),
+            'gas': funTx.estimate_gas({"from": self.wallet_address, "gasPrice": web3.eth.gas_price}),
             #"gasPrice": web3.eth.gas_price,
             'nonce': nonce
         })
-        signed_tx = web3.eth.account.signTransaction(tx, self.key)
-        tx_hash = web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-        hashes = Web3.toHex(tx_hash)
-        web3.eth.waitForTransactionReceipt(tx_hash)
+        signed_tx = web3.eth.account.sign_transaction(tx, self.key)
+        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        hashes = Web3.to_hex(tx_hash)
+        web3.eth.wait_for_transaction_receipt(tx_hash)
         status = web3.eth.get_transaction_receipt(hashes)
         txStatus = status.status
         success = int(txStatus) == 1
